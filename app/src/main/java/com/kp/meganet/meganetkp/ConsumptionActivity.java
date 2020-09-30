@@ -38,9 +38,9 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
     private boolean _pairDialogIsON;
 
     private Button connectBtn, disconnectBtn, getConsumptionBtn;
-    private TextView dataTextView, connectTextView, inputTV, unitTV;
+    private TextView dataTextView, connectTextView, inputTV, unitTV, registerTypeTV;
     private RadioGroup dataConvert;
-    private Spinner inputSpinner;
+    private Spinner inputSpinner,registerSpinner;
 
     private Timer _downCountTimer;
     private Integer _timerCount;
@@ -68,6 +68,8 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         dataConvert = (RadioGroup) findViewById(R.id.convertRadioGroup);
         inputSpinner = (Spinner) findViewById(R.id.inputSpinner);
         inputTV = (TextView) findViewById(R.id.inputTextView);
+        registerSpinner = (Spinner) findViewById(R.id.registerSpinner);
+        registerTypeTV = (TextView) findViewById(R.id.registerTypeTextView);
         dataTextView = (TextView) findViewById(R.id.dataTextView);
         unitTV = (TextView) findViewById(R.id.unit_textView);
         unitTV.setText("");
@@ -76,6 +78,8 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         dataConvert.setVisibility(View.INVISIBLE);
         inputTV.setVisibility(View.INVISIBLE);
         inputSpinner.setVisibility(View.INVISIBLE);
+        registerSpinner.setVisibility(View.INVISIBLE);
+        registerTypeTV.setVisibility(View.INVISIBLE);
         disconnectBtn.setVisibility(View.INVISIBLE);
         dataTextView.setVisibility(View.INVISIBLE);
         unitTV.setVisibility(View.INVISIBLE);
@@ -89,14 +93,21 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
 
         }, 0, 1000);
 
-        String[] arraySpinner = new String[] {
-                "3", "4", "5", "6", "7", "8", "9", "10"
-        };
+        String[] inputArraySpinner = new String[] {
+                "3", "4", "5", "6", "7", "8", "9", "10"};
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, arraySpinner);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        inputSpinner.setAdapter(adapter);
+        ArrayAdapter<String> inputAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, inputArraySpinner);
+        inputAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        inputSpinner.setAdapter(inputAdapter);
+
+        String[] registerArraySpinner = new String[] {
+                "MBUS-Sensus HRI-Mei", "MBUS-Sensus Abs.Encoder", "MBUS-Elster Falcon", "MODBUS registers"};
+
+        ArrayAdapter<String> registerAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, registerArraySpinner);
+        registerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        registerSpinner.setAdapter(registerAdapter);
 
         MeganetInstances.getInstance().GetMeganetEngine().SetReadMetersRSNT(true);
         MeganetInstances.getInstance().GetMeganetEngine().InitProgramming(this, MeganetInstances.getInstance().GetMeganetDb().getSetting(1).GetKeyValue());
@@ -125,6 +136,8 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                     dataConvert.setVisibility(View.INVISIBLE);
                     inputTV.setVisibility(View.INVISIBLE);
                     inputSpinner.setVisibility(View.INVISIBLE);
+                    registerSpinner.setVisibility(View.INVISIBLE);
+                    registerTypeTV.setVisibility(View.INVISIBLE);
                     disconnectBtn.setVisibility(View.INVISIBLE);
                     dataTextView.setVisibility(View.INVISIBLE);
                     unitTV.setVisibility(View.INVISIBLE);
@@ -166,6 +179,25 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
             i++;
             j--;
         }
+    }
+
+    public double getRegisterType()
+    {
+        double ret = 1;
+        switch (registerSpinner.getSelectedItem().toString())
+        {
+            case "MBUS-Sensus HRI-Mei":
+                ret = 100;
+                break;
+            case "MBUS-Sensus Abs.Encoder":
+                break;
+            case "MBUS-Elster Falcon":
+                ret = 1000;
+                break;
+            case "MODBUS registers":
+                break;
+        }
+        return ret;
     }
 
     public double ConvertByteToNumber(byte[] bytes)
@@ -270,13 +302,14 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
             byte[] subArray = Arrays.copyOfRange(dataArr_prm, dataArr_prm.length-4, dataArr_prm.length);
             reverseArray(subArray);
             consumption = ConvertByteToNumber(subArray);
-            consumption = consumption/100;
+            double register = getRegisterType();
+            consumption = consumption/register;
             unitTV.setText("m³/h");
-            dataTextView.setText(String.format("%.02f", consumption));
+            dataTextView.setText(String.format("%.03f", consumption));
             //consumption = unitConsumption(dataArr_prm[8], consumption);
             _timerFlag = false;
         }
-     }
+    }
 
     @Override
     public void GetTime(byte[] dataArr_prm) {
@@ -305,6 +338,8 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                             dataConvert.setVisibility(View.INVISIBLE);
                             inputTV.setVisibility(View.INVISIBLE);
                             inputSpinner.setVisibility(View.INVISIBLE);
+                            registerSpinner.setVisibility(View.INVISIBLE);
+                            registerTypeTV.setVisibility(View.INVISIBLE);
                             disconnectBtn.setVisibility(View.INVISIBLE);
                             dataTextView.setVisibility(View.INVISIBLE);
                             unitTV.setVisibility(View.INVISIBLE);
@@ -392,6 +427,8 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                         //dataConvert.setVisibility(View.VISIBLE);
                         inputTV.setVisibility(View.VISIBLE);
                         inputSpinner.setVisibility(View.VISIBLE);
+                        registerSpinner.setVisibility(View.VISIBLE);
+                        registerTypeTV.setVisibility(View.VISIBLE);
                         disconnectBtn.setVisibility(View.VISIBLE);
                         dataTextView.setVisibility(View.VISIBLE);
                         unitTV.setVisibility(View.VISIBLE);
@@ -490,7 +527,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                 intent = new Intent(ConsumptionActivity.this, SettingsActivity.class);
                 startActivity(intent);
                 break;
-
+/*
             case R.id.menu_consumption_program:
                 Toast.makeText(getApplicationContext(), "Programming", Toast.LENGTH_LONG).show();
 
@@ -506,6 +543,8 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                 intent = new Intent(ConsumptionActivity.this, RDM_Controll.class);
                 startActivity(intent);
                 break;
+
+ */
         }
 
         return super.onOptionsItemSelected(item);
