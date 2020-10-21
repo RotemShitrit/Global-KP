@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.kp.meganet.meganetkp">
+    package="com.kp.meganet.global">
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -29,7 +29,6 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -45,7 +44,7 @@
             android:name=".ReadsActivity"
             android:label="RDM Controll"
             android:screenOrientation="portrait" />
-        <activity android:name=".TestActivity" />
+        <activity android:name="com.kp.meganet.global.TestActivity" />
         <activity
             android:name=".PulseActivity"
             android:label="Read Ports"
@@ -141,8 +140,6 @@
         <activity android:name=".ChooseRegisterActivity"
             android:label="Choose Register"
             android:screenOrientation="portrait"/>
-
-
     </application>
 
 </manifest>
