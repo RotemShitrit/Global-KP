@@ -977,6 +977,12 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         return type_prm;
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        MeganetInstances.getInstance().GetMeganetEngine().resetCurrentCommand();
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

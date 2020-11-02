@@ -2414,6 +2414,8 @@ public class MeganetEngine extends BTengine {
         }
     }
 
+    public void resetCurrentCommand() { _currentCommand = commandType.NONE; } // In order to stop toast messages after finish activity
+
     public void SetLastLatitude(String lat_prm)
     {
         last_latitude = lat_prm;
