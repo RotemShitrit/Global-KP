@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,12 +35,14 @@ import static java.lang.Math.pow;
 
 public class ConsumptionActivity extends AppCompatActivity implements iCallback {
     private String _toastMessageToDisplay;
-    private boolean _pairDialogIsON;
+    private boolean _pairDialogIsON, flagdouble;
+    private int cntDouble;
 
     private Button connectBtn, disconnectBtn, getConsumptionBtn;
-    private TextView dataTextView, connectTextView, inputTV, unitTV, registerTypeTV;
+    private TextView dataTextView, connectTextView, inputTV, unitTV, registerTypeTV, registerSizeTV, data1TV, data2TV, unit1TV, unit2TV;
     private RadioGroup dataConvert;
-    private Spinner inputSpinner,registerSpinner;
+    private Spinner inputSpinner,registerSpinner, registerSizeSpinner;
+    private ConstraintLayout constraintLayout1;
 
     private Timer _downCountTimer;
     private Integer _timerCount;
@@ -59,7 +62,6 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         _pairDialogIsON = false;
-        setTitle("Flow Rate");
         getConsumptionBtn = (Button) findViewById(R.id.getConsuptBtn);
         connectBtn = (Button) findViewById(R.id.btnConnect);
         disconnectBtn = (Button) findViewById(R.id.btnDisconnect);
@@ -69,9 +71,20 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         inputTV = (TextView) findViewById(R.id.inputTextView);
         registerSpinner = (Spinner) findViewById(R.id.registerSpinner);
         registerTypeTV = (TextView) findViewById(R.id.registerTypeTextView);
+        registerSizeSpinner = (Spinner) findViewById(R.id.registerSizeSpinner);
+        registerSizeTV = (TextView) findViewById(R.id.registerSizeTextView);
         dataTextView = (TextView) findViewById(R.id.dataTextView);
         unitTV = (TextView) findViewById(R.id.unit_textView);
+        data1TV = (TextView) findViewById(R.id.data1TextView);
+
+        unit1TV = (TextView) findViewById(R.id.unit1_textView);
+        data2TV = (TextView) findViewById(R.id.data2TextView);
+        unit2TV = (TextView) findViewById(R.id.unit2_textView);
+        constraintLayout1 = (ConstraintLayout) findViewById(R.id.constraintLayout1);
         unitTV.setText("");
+        unit1TV.setText("");
+        unit2TV.setText("");
+        cntDouble = 0;
 
         getConsumptionBtn.setVisibility(View.INVISIBLE);
         dataConvert.setVisibility(View.INVISIBLE);
@@ -79,9 +92,12 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         inputSpinner.setVisibility(View.INVISIBLE);
         registerSpinner.setVisibility(View.INVISIBLE);
         registerTypeTV.setVisibility(View.INVISIBLE);
+        registerSizeSpinner.setVisibility(View.INVISIBLE);
+        registerSizeTV.setVisibility(View.INVISIBLE);
         disconnectBtn.setVisibility(View.INVISIBLE);
         dataTextView.setVisibility(View.INVISIBLE);
         unitTV.setVisibility(View.INVISIBLE);
+        constraintLayout1.setVisibility(View.INVISIBLE);
 
         _downCountTimer = new Timer();
         _downCountTimer.schedule(new TimerTask() {
@@ -93,7 +109,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         }, 0, 1000);
 
         String[] inputArraySpinner = new String[] {
-                "3", "4", "5", "6", "7", "8", "9", "10"};
+                "Single", "Double"};
 
         ArrayAdapter<String> inputAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, inputArraySpinner);
@@ -108,6 +124,15 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         registerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         registerSpinner.setAdapter(registerAdapter);
 
+
+        String[] registerSizeArraySpinner = new String[] {
+                "Up to 4", "At least 6"};
+
+        ArrayAdapter<String> registerSizeAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, registerSizeArraySpinner);
+        registerSizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        registerSizeSpinner.setAdapter(registerSizeAdapter);
+
         MeganetInstances.getInstance().GetMeganetEngine().SetReadMetersRSNT(true);
         MeganetInstances.getInstance().GetMeganetEngine().InitProgramming(this, MeganetInstances.getInstance().GetMeganetDb().getSetting(1).GetKeyValue());
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
@@ -121,7 +146,12 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
             @Override
             public void onClick(View v) {
                 unitTV.setText("");
+                unit1TV.setText("");
+                unit2TV.setText("");
+
                 dataTextView.setText("");
+                data1TV.setText("");
+                data2TV.setText("");
                 MeganetInstances.getInstance().GetMeganetEngine().Prompt(MeganetEngine.ePromptType.TEN_CHR_PAIRING, "E");
             }
         });
@@ -137,9 +167,12 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                     inputSpinner.setVisibility(View.INVISIBLE);
                     registerSpinner.setVisibility(View.INVISIBLE);
                     registerTypeTV.setVisibility(View.INVISIBLE);
+                    registerSizeSpinner.setVisibility(View.INVISIBLE);
+                    registerSizeTV.setVisibility(View.INVISIBLE);
                     disconnectBtn.setVisibility(View.INVISIBLE);
                     dataTextView.setVisibility(View.INVISIBLE);
                     unitTV.setVisibility(View.INVISIBLE);
+                    constraintLayout1.setVisibility(View.INVISIBLE);
 
                     connectTextView.setText("Not Connected");
                     _timerFlag = false;
@@ -152,13 +185,28 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
             @Override
             public void onClick(View v) {
                 Object selectedItem = inputSpinner.getSelectedItem();
-                MeganetInstances.getInstance().GetMeganetEngine().getConsumption(Integer.parseInt(selectedItem.toString()));
+                if(selectedItem.toString().equals("Single"))
+                {
+                    dataTextView.setVisibility(View.VISIBLE);
+                    unitTV.setVisibility(View.VISIBLE);
+                    constraintLayout1.setVisibility(View.INVISIBLE);
+                    flagdouble = false;
+
+                } else {
+                    dataTextView.setVisibility(View.INVISIBLE);
+                    unitTV.setVisibility(View.INVISIBLE);
+                    constraintLayout1.setVisibility(View.VISIBLE);
+                    flagdouble = true;
+                }
+                MeganetInstances.getInstance().GetMeganetEngine().getConsumption(3);
                 unitTV.setText("");
+                unit1TV.setText("");
+                unit2TV.setText("");
+
                 _timerFlag = true;
                 _timerCount = 0;
             }
         });
-
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -180,25 +228,35 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         }
     }
 
+
     public double getRegisterType()
     {
         double ret = 1;
         switch (registerSpinner.getSelectedItem().toString())
         {
             case "MBUS-Sensus HRI-Mei":
-                ret = 100;
+                if(registerSizeSpinner.getSelectedItem().toString().equals("Up to 4"))
+                    ret = 100;
+                else
+                    ret = 10;
                 break;
             case "MBUS-Sensus Abs.Encoder":
+                if(registerSizeSpinner.getSelectedItem().toString().equals("Up to 4"))
+                    ret = 1;
+                else
+                    ret = 0.1;
                 break;
             case "MBUS-Elster Falcon":
-                ret = 1000;
+                if(registerSizeSpinner.getSelectedItem().toString().equals("Up to 4"))
+                    ret = 1000;
+                else
+                    ret = 100;
                 break;
             case "MODBUS registers":
                 break;
         }
         return ret;
     }
-
     public double ConvertByteToNumber(byte[] bytes)
     {
         double number = 0;
@@ -219,6 +277,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         return num;
     }
 
+/*
     public double unitConsumption(byte b, double consumption)
     {
         String str = String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0');
@@ -261,6 +320,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         dataTextView.setText(String.format("%.02f", consumption));
         return consumption;
     }
+*/
 
     public void Oncheck(View v){
     }
@@ -284,7 +344,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
 
     @Override
     public void ReadData(byte[] dataArr_prm) {
-        if(dataArr_prm != null)
+        while (dataArr_prm.length > 0)
         {
             /*int num = dataType(dataArr_prm[7]);
             if (num>0)
@@ -298,18 +358,39 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                 dataTextView.setText("No data!");
                 unitTV.setText("");
             }*/
-            byte[] subArray = Arrays.copyOfRange(dataArr_prm, dataArr_prm.length-4, dataArr_prm.length);
+            int len = dataArr_prm[1];
+            byte[] msg = Arrays.copyOfRange(dataArr_prm,0,len+2);
+            dataArr_prm = Arrays.copyOfRange(dataArr_prm,len+2,dataArr_prm.length);
+
+            byte[] subArray = Arrays.copyOfRange(msg, msg.length-4, msg.length);
             reverseArray(subArray);
             consumption = ConvertByteToNumber(subArray);
             double register = getRegisterType();
             consumption = consumption/register;
-            unitTV.setText("m³/h");
-            dataTextView.setText(String.format("%.03f", consumption));
-            //consumption = unitConsumption(dataArr_prm[8], consumption);
-            _timerFlag = false;
+
+            if(flagdouble)
+            {
+                cntDouble++;
+                if(cntDouble>1) {
+                    data2TV.setText(String.format("%.03f", consumption));
+                    unit2TV.setText("m³/h");
+                    _timerFlag = false;
+                    cntDouble = 0;
+                    flagdouble = false;
+                }
+                else {
+                    data1TV.setText(String.format("%.03f", consumption));
+                    unit1TV.setText("m³/h");
+                }
+            }
+            else {
+                dataTextView.setText(String.format("%.03f", consumption));
+                unitTV.setText("m³/h");
+                //consumption = unitConsumption(dataArr_prm[8], consumption);
+                _timerFlag = false;
+            }
         }
     }
-
     @Override
     public void GetTime(byte[] dataArr_prm) {
 
@@ -324,7 +405,16 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                     public void run() {
                         // Access/update UI here
                         Integer val = 60 - _timerCount;
-                        dataTextView.setText(val.toString());
+
+                        if(flagdouble)
+                        {
+                            data2TV.setText(val.toString());
+                            if (cntDouble<1)
+                                data1TV.setText(val.toString());
+                        }
+                        else
+                            dataTextView.setText(val.toString());
+
                         consumption = 0;
                         if(_timerCount > 60)
                         {
@@ -339,9 +429,12 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                             inputSpinner.setVisibility(View.INVISIBLE);
                             registerSpinner.setVisibility(View.INVISIBLE);
                             registerTypeTV.setVisibility(View.INVISIBLE);
+                            registerSizeSpinner.setVisibility(View.INVISIBLE);
+                            registerSizeTV.setVisibility(View.INVISIBLE);
                             disconnectBtn.setVisibility(View.INVISIBLE);
                             dataTextView.setVisibility(View.INVISIBLE);
                             unitTV.setVisibility(View.INVISIBLE);
+                            constraintLayout1.setVisibility(View.INVISIBLE);
 
                             _timerFlag = false;
                             _timerCount = 0;
@@ -428,9 +521,12 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
                         inputSpinner.setVisibility(View.VISIBLE);
                         registerSpinner.setVisibility(View.VISIBLE);
                         registerTypeTV.setVisibility(View.VISIBLE);
+                        registerSizeSpinner.setVisibility(View.VISIBLE);
+                        registerSizeTV.setVisibility(View.VISIBLE);
                         disconnectBtn.setVisibility(View.VISIBLE);
-                        dataTextView.setVisibility(View.VISIBLE);
-                        unitTV.setVisibility(View.VISIBLE);
+                        dataTextView.setVisibility(View.INVISIBLE);
+                        unitTV.setVisibility(View.INVISIBLE);
+                        constraintLayout1.setVisibility(View.INVISIBLE);
 
                         _pairDialogIsON = false;
                     }

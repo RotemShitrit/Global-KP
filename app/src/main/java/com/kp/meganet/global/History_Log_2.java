@@ -1,5 +1,6 @@
 package com.kp.meganet.global;
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -47,7 +48,7 @@ import java.util.Map;
 public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBack,iCallback {
 
     private boolean _pairDialogIsON;
-    Map<Long,Long> messages;
+    Map<Double,Double> messages;
 
     private TextView tv16,tv1;
     private RadioGroup input;
@@ -61,7 +62,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
     String new_fileName;// name of file
     String dataFile = ""; //all data that file include
 
-    long curr_index;
+    double curr_index;
     int msgSize;
     int current_length, input_num, length, total, start;
     String[] inputs = {"1","2","3","4","5","6","7","8","9","10"};
@@ -185,7 +186,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
             }
         });
 
-        messages = new HashMap<Long, Long>();
+        messages = new HashMap<Double, Double>();
 
         _pairDialogIsON = false;
         start = 1; // the first read of a package
@@ -338,7 +339,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
     @Override
     public void ReadData(byte[] dataArr_prm) { //
         int len, num_of_msgs;
-        long first_index, read;
+        double first_index, read;
         byte[] msg;
 
         if(dataArr_prm == null) { // If the device connection was disconnected
@@ -373,7 +374,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
                     num_of_msgs = (len - 7) / msgSize;
 
                     for (int i = 0; i < num_of_msgs; i++) {
-                        read = ConvertByteToNumber(Arrays.copyOfRange(msg, 9 + 5 * i, 14 + 5 * i));
+                        read = ConvertByteToNumber(Arrays.copyOfRange(msg, 9 + msgSize * i, 9 + msgSize * (i+1)));
                         messages.put(first_index + i, read);
                         curr_index++;
                     }
@@ -387,8 +388,8 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
             if (current_length == total) { // If we received all reads we need to upload the history log to FTP
                 byte[] tamper_msg = {-1, -1, -1, -1, -1};
                 double tamper = ConvertByteToNumber(tamper_msg);
-                long id, message_prm;
-                List<Long> messagesByKey = new ArrayList<Long>(messages.keySet());
+                double id, message_prm;
+                List<Double> messagesByKey = new ArrayList<Double>(messages.keySet());
                 toast.cancel();
 
                 Collections.sort(messagesByKey);
@@ -398,7 +399,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
                 int hoursToSubtract;
                 Calendar curr_read;
 
-                for (long key : messagesByKey) {
+                for (double key : messagesByKey) {
                     curr_read = (Calendar) last_read.clone();
                     id = key;
                     message_prm = messages.get(key);
@@ -407,8 +408,13 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
                     dataFile += String.valueOf(id) + ", ";
 
                     //Insert Hour
-                    hoursToSubtract = (int) (id - 1);
-                    curr_read.add(Calendar.HOUR, -hoursToSubtract);
+                    if(msgSize == 5) {
+                        hoursToSubtract = (int) (id-1);
+                        curr_read.add(Calendar.HOUR, -hoursToSubtract);
+                    } else {
+                        hoursToSubtract = (int) ((id-1)*15);
+                        curr_read.add(Calendar.MINUTE, -hoursToSubtract);
+                    }
                     _date = format.format(curr_read.getTime());
                     dataFile += _date + ", ";
 
@@ -466,8 +472,15 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
     }
 
     public boolean checkPermission(String permmission){
-        int check = ContextCompat.checkSelfPermission(this,permmission);
-        return (check == PackageManager.PERMISSION_GRANTED);
+        //return(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED);
+        if ((ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
+            toast.makeText(getApplicationContext(), "Storage permission does not granted!\n Cannot save file in storage.", Toast.LENGTH_SHORT).show();
+            return false;
+        } else {
+            Log.i("State", "Yes, it is permitted!");
+            return true; // Permission has already been granted
+        }
     }
 
     private boolean isExternalStorageWritable(){
@@ -482,12 +495,12 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
 
     public void send_requests() {
         int len;
-        List<Long> messagesByKey = new ArrayList<Long>(messages.keySet());
+        List<Double> messagesByKey = new ArrayList<Double>(messages.keySet());
         Collections.sort(messagesByKey);
 
         if (current_length < total) {
             int index = 1;
-            for (Long key : messagesByKey) {
+            for (Double key : messagesByKey) {
                 if (index < key) {
                     len = (int) (key - index);
                     if (len > 5)
@@ -516,16 +529,16 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
         }
         else {
             MeganetInstances.getInstance().GetMeganetEngine().reset_timerCount();
-            int seconds = (int) ConvertByteToNumber(Arrays.copyOfRange(dataArr_prm, 7, 9)); // get the number of second that pass from the last read
+            int seconds = (int)ConvertByteToNumber(Arrays.copyOfRange(dataArr_prm, 7, 9)); // get the number of second that pass from the last read
             last_read.add(Calendar.SECOND, -seconds); // calculate the date of the last read
             toast.makeText(getApplicationContext(), "Getting log..", Toast.LENGTH_SHORT).show();
             MeganetInstances.getInstance().GetMeganetEngine().GetLog(input_num, start, length, false); // send get log
         }
     }
 
-    public long ConvertByteToNumber(byte[] bytes)
+    public double ConvertByteToNumber(byte[] bytes)
     {
-        long number = 0;
+        double number = 0;
         for(int i = 0; i<bytes.length; i++)
         {
             number += number * 255 + (bytes[i] & 0xFF);
