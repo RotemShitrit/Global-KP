@@ -76,7 +76,6 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         dataTextView = (TextView) findViewById(R.id.dataTextView);
         unitTV = (TextView) findViewById(R.id.unit_textView);
         data1TV = (TextView) findViewById(R.id.data1TextView);
-
         unit1TV = (TextView) findViewById(R.id.unit1_textView);
         data2TV = (TextView) findViewById(R.id.data2TextView);
         unit2TV = (TextView) findViewById(R.id.unit2_textView);
@@ -111,6 +110,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         String[] inputArraySpinner = new String[] {
                 "Single", "Double"};
 
+        // Initializing an ArrayAdapter for input spinner
         ArrayAdapter<String> inputAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, inputArraySpinner);
         inputAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -119,6 +119,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         String[] registerArraySpinner = new String[] {
                 "MBUS-Sensus HRI-Mei", "MBUS-Sensus Abs.Encoder", "MBUS-Elster Falcon", "MODBUS registers"};
 
+        // Initializing an ArrayAdapter for register spinner
         ArrayAdapter<String> registerAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, registerArraySpinner);
         registerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -128,6 +129,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         String[] registerSizeArraySpinner = new String[] {
                 "Up to 4", "At least 6"};
 
+        // Initializing an ArrayAdapter for register size spinner
         ArrayAdapter<String> registerSizeAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, registerSizeArraySpinner);
         registerSizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -142,6 +144,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
             }
         }, 2000);
 
+        // connect to MTU
         connectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,6 +159,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
             }
         });
 
+        // disconnect from MTU
         disconnectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -181,6 +185,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
             }
         });
 
+        // get flow rate from connected MTU
         getConsumptionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -212,6 +217,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    // reverse byte array function
     public void reverseArray(byte[] arr)
     {
         int i=0, j=arr.length-1;
@@ -228,7 +234,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         }
     }
 
-
+    // this function get the register type which affect the calculation of flow rate
     public double getRegisterType()
     {
         double ret = 1;
@@ -257,6 +263,8 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         }
         return ret;
     }
+
+    // get array of bytes and convert it to number
     public double ConvertByteToNumber(byte[] bytes)
     {
         double number = 0;
@@ -342,6 +350,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
 
     }
 
+    // get MTU response after get flow rate ask and display it on screen
     @Override
     public void ReadData(byte[] dataArr_prm) {
         while (dataArr_prm.length > 0)
@@ -396,6 +405,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
 
     }
 
+    // timer method in order to wait for MTU response for limited time
     private void TimerMethod() {
         try {
             if(_timerFlag)
@@ -456,6 +466,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         }
     }
 
+    // pairing MTU function
     public boolean PairData(String deviceName_prm, String ndevice_pam, boolean titleOnly) {
         if (!_pairDialogIsON) {
             _pairDialogIsON = true;
@@ -502,6 +513,7 @@ public class ConsumptionActivity extends AppCompatActivity implements iCallback 
         }
     }
 
+    // pairing alert dialog function
     private void PairingDialot() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Connect to MTU ID: " + MeganetInstances.getInstance().GetMeganetEngine().GetUnitAddress() + " ?")

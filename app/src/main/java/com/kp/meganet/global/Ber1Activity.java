@@ -72,6 +72,7 @@ public class Ber1Activity extends AppCompatActivity {
             }
         });
 
+        //Click on save buttton save the data in csv file
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,13 +80,13 @@ public class Ber1Activity extends AppCompatActivity {
                 String data = getData();
 
                 if(isExternalStorageWritable() && checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    String root = Environment.getExternalStorageDirectory().toString();
+                    String root = Environment.getExternalStorageDirectory().toString(); // get path of storage
                     File myDir = new File(root + "/saved_ber1_files");
-                    if (!myDir.exists()) {
+                    if (!myDir.exists()) { // if directory not exist create it
                         myDir.mkdirs();
                     }
                     File file = new File(myDir, fileName);
-                    if (file.exists())
+                    if (file.exists()) // delete file if exist
                         file.delete();
 
                     try {
@@ -104,6 +105,7 @@ public class Ber1Activity extends AppCompatActivity {
             }
         });
 
+        // read csv file and present it on this layout
         loadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,7 +130,7 @@ public class Ber1Activity extends AppCompatActivity {
         meters.add("TurboBAR");
         meters.add("TurboIR");
 
-        // Initializing an ArrayAdapter
+        // Initializing an ArrayAdapter for meter spinner
         meterSpinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.checked, meters);
         meterSpinnerArrayAdapter.setDropDownViewResource(R.layout.spinner_item);
         meterSpinner.setAdapter(meterSpinnerArrayAdapter);
@@ -172,7 +174,7 @@ public class Ber1Activity extends AppCompatActivity {
                     sizes.add("20\"");
                 }
 
-                // Initializing an ArrayAdapter
+                // Initializing an ArrayAdapter for size spinner
                 sizeSpinnerArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.checked, sizes);
                 sizeSpinnerArrayAdapter.setDropDownViewResource(R.layout.spinner_item);
                 sizeSpinner.setAdapter(sizeSpinnerArrayAdapter);
@@ -194,6 +196,7 @@ public class Ber1Activity extends AppCompatActivity {
         negative.setText("1100");
         positive.setText(String.valueOf(Integer.valueOf(String.valueOf(accumulation.getText())) + Integer.valueOf(String.valueOf(negative.getText()))));
 
+        // change accumulation edit text update the positive edit text automatic
         accumulation.setOnFocusChangeListener(new View.OnFocusChangeListener(){
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -219,6 +222,7 @@ public class Ber1Activity extends AppCompatActivity {
             }
         });
 
+        // change negative edit text update the positive edit text automatic
         negative.setOnFocusChangeListener(new View.OnFocusChangeListener(){
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -249,7 +253,7 @@ public class Ber1Activity extends AppCompatActivity {
         flows.add("GPM");
         flows.add("CFS");
 
-        // Initializing an ArrayAdapter
+        // Initializing an ArrayAdapter for flow spinner
         flowSpinnerArrayAdapter = new ArrayAdapter<String>(this, R.layout.checked, flows);
         flowSpinnerArrayAdapter.setDropDownViewResource(R.layout.spinner_item);
         flowUnitSpinner.setAdapter(flowSpinnerArrayAdapter);
@@ -296,10 +300,12 @@ public class Ber1Activity extends AppCompatActivity {
                     resolution.add("10000");
                 }
 
+                // Initializing an ArrayAdapter for accumulation unit spinner
                 accUnitArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.checked, accUnit);
                 accUnitArrayAdapter.setDropDownViewResource(R.layout.spinner_item);
                 accUnitSpinner.setAdapter(accUnitArrayAdapter);
 
+                // Initializing an ArrayAdapter for resolution spinner
                 resolutionArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.checked, resolution);
                 resolutionArrayAdapter.setDropDownViewResource(R.layout.spinner_item);
                 resolutionSpinner.setAdapter(resolutionArrayAdapter);
@@ -348,6 +354,7 @@ public class Ber1Activity extends AppCompatActivity {
             }
         });
 
+        // Initializing an ArrayAdapter for pulse width spinner
         String[] pulseWidths = {"off", "50", "100", "200", "300", "400", "500"};
         pulseWidthSpinnerArrayAdapter = new ArrayAdapter<String>(getApplicationContext(), R.layout.checked, pulseWidths);
         pulseWidthSpinnerArrayAdapter.setDropDownViewResource(R.layout.spinner_item);
@@ -361,6 +368,7 @@ public class Ber1Activity extends AppCompatActivity {
         meterSpinner.setSelection(0);
         flowUnitSpinner.setSelection(0);
     }
+    // function get data take all of the data and arrange it in a string for csv file
     private String getData()
     {
         String data = "";
@@ -381,11 +389,13 @@ public class Ber1Activity extends AppCompatActivity {
         return data;
     }
 
+    //check permission of storage
     public boolean checkPermission(String permmission){
         int check = ContextCompat.checkSelfPermission(this,permmission);
         return (check == PackageManager.PERMISSION_GRANTED);
     }
 
+    // check if it is possible to save files on storage
     private boolean isExternalStorageWritable(){
         if(Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())){
             Log.i("State", "Yes, it is writable!");
@@ -394,6 +404,8 @@ public class Ber1Activity extends AppCompatActivity {
             return false;
         }
     }
+
+    // after click on load button, this function read data from chosen csv file in order to present it on the screen
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode)
@@ -433,6 +445,7 @@ public class Ber1Activity extends AppCompatActivity {
         }
     }
 
+    // this function arrange the data in its right place
     private void setData(String data)
     {
         int i;

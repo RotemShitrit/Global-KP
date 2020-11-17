@@ -59,6 +59,7 @@ public class MeganetDB extends SQLiteOpenHelper {
         //OnSettingsInit();
     }
 
+    // initial settings parameters
     private void OnSettingsInit()
     {
         //if(getSettingsCount() > 0)

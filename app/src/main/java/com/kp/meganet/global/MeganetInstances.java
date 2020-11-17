@@ -4,8 +4,8 @@ package com.kp.meganet.global;
  * Created by alex on 11/22/2015.
  */
 public class MeganetInstances {
+    // this is a singletone that just one instance all the time
     private static MeganetInstances ourInstance = new MeganetInstances();
-
     public static MeganetInstances getInstance() {
         return ourInstance;
     }
@@ -17,6 +17,7 @@ public class MeganetInstances {
 
     }
 
+    // setters
     public void SetMeganetEngine(MeganetEngine engine_prm)
     {
         _meganetEngine = engine_prm;
@@ -26,6 +27,7 @@ public class MeganetInstances {
         _meganetDb = db_prm;
     }
 
+    // getters
     public MeganetEngine GetMeganetEngine()
     {
         return _meganetEngine;

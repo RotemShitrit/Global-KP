@@ -92,9 +92,7 @@ public class MeganetEngine extends BTengine {
     iPulseCallback _pulseConsumer;
     private boolean _is_extended;
     private int new_pulse_port;
-
     private Timer _promptTimer;
-
     byte[] _unitDataArr;
     byte[] _userDataArr;
     Map<String, QryParams> _unitParams;
@@ -104,29 +102,20 @@ public class MeganetEngine extends BTengine {
     private String _rssiFreq1, _rssiFreq2, _readMeterFreq, _rdmMeterFreq;
     private String _useKpack;
     private String _currentFileterStr;
-
-
     private String last_sn; // new meter SN
     private String last_read; // new read
-
     //private boolean use_old;
     private String last_old_sn; // old meter SN
     private String last_old_read; // old read
     private String account_number; // Account number
-
     private String address_name; // Address name
     private String last_latitude; // LAT
     private String last_longitude; // LONG
-
     private String _qr_address;
-
-
     int global_port_num;
     int global_port_sn;
     int global_port_read;
-
     int programm_type_id;
-
     private byte[] _promptArr;
     private byte[] _msgArr;
     private volatile int _timerCount;
@@ -180,6 +169,7 @@ public class MeganetEngine extends BTengine {
         notify();
     }
 
+    //setters and getters
     public void SetCurrentProgrammType(int type_prm)
     {
         programm_type_id = type_prm;
@@ -359,7 +349,7 @@ public class MeganetEngine extends BTengine {
         SendData(arr);
     }
 
-    public boolean SetReadMetersRSNT(boolean flg) //
+    public boolean SetReadMetersRSNT(boolean flg)
     {
         byte[] arr = new byte[4];
 
@@ -973,7 +963,7 @@ public class MeganetEngine extends BTengine {
         }
     }
 
-    public boolean MeterPowerOff()
+    public boolean MeterPowerOff() // Disconnect from MTU
     {
         _currentCommand = commandType.WRITE_CMD;
         byte[] ReadArr;
@@ -1243,6 +1233,8 @@ public class MeganetEngine extends BTengine {
         SendData(arr);
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // This function try to update data on MTU by send command to RSINT
     public boolean Programm(Map<String, QryParams> dataParams_prm) {
         _userParams = dataParams_prm;
         _userDataArr = _dataAnalazer.ApplyData(_unitDataArr, dataParams_prm, _promptName.length(), _isPair);
@@ -1318,7 +1310,7 @@ public class MeganetEngine extends BTengine {
         return true;
     }
 
-    public boolean SendData(byte[] dataArr_prm)
+    public boolean SendData(byte[] dataArr_prm) // send msg to RSINT
     {
         _allowReceiveFlg = false;
         _dataBuffer.clear();
@@ -1338,6 +1330,9 @@ public class MeganetEngine extends BTengine {
         return "";
     }
 
+
+    // This function get data from RSINT and follow the current command type, it decode the data, analyze it
+    // and send back a request if needed.
     @Override
     protected void DataProcess(byte[] dataArr_prm)
     {
@@ -1475,11 +1470,11 @@ public class MeganetEngine extends BTengine {
                     case PROMPT:
                         try {
                             if(_promtType == ePromptType.PAIRING || _promtType == ePromptType.TEN_CHR_PAIRING)
-                            {
+                            { // 10 or 8 digits
                                 _startPrompt = false;
                                 _isPair = true;
                                 String addr1, addr2, addr3, tmpAddr;
-                                if(_promtType == ePromptType.PAIRING)
+                                if(_promtType == ePromptType.PAIRING) // 8 digits
                                 {
                                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                     // Verify my address
@@ -1500,7 +1495,7 @@ public class MeganetEngine extends BTengine {
                                     tmpAddr = addr1 + addr2;
                                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                 }
-                                else
+                                else // 10 digits
                                 {
                                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1539,7 +1534,7 @@ public class MeganetEngine extends BTengine {
                                 StartCollectData(true, false);
                                 _consumer.PairData(deviceName.substring(0, deviceName.length()), _ndevice, false);
                             }
-                            else //REGULAR CASE
+                            else //REGULAR CASE - no need pairing
                             {
                                 _startPrompt = false;
                                 _isPair = false;
@@ -1571,7 +1566,7 @@ public class MeganetEngine extends BTengine {
                                 {
                                     promptArr[i+2] = promptNameArr[i];
                                 }
-                                promptArr[2 + promptNameArr.length] = (byte) 0xe01;
+                                promptArr[2 + promptNameArr.length] = (byte) 0xe01; // read type
                                 SendData(promptArr);
                             }
 
@@ -1588,7 +1583,7 @@ public class MeganetEngine extends BTengine {
                                 _isPair = true;
                                 String addr1, addr2, addr3, tmpAddr;
 
-                                if(_promtType == ePromptType.PAIRING) {
+                                if(_promtType == ePromptType.PAIRING) { // 8 digits
                                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                     // Verify my address
 
@@ -1610,7 +1605,7 @@ public class MeganetEngine extends BTengine {
 
                                     //_unitAddress = Utilities.StringCompleter(String.valueOf(Integer.parseInt(tmpAddr, 16)), 7, "0", true);
 
-                                } else {
+                                } else { // 10 digits
                                     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                     // Verify my address
 
@@ -1693,9 +1688,9 @@ public class MeganetEngine extends BTengine {
                     case READ:
                         _unitDataArr = null;
                         _unitDataArr = dataArr_prm;
-                        _unitParams = _dataAnalazer.AnalizeData(dataArr_prm, _ndevice, _promptName.length(), _isPair); // check here!!
+                        _unitParams = _dataAnalazer.AnalizeData(dataArr_prm, _ndevice, _promptName.length(), _isPair); // analyze the relevant data
                         android.os.SystemClock.sleep(500);
-                        _consumer.SetReadData(_unitParams); // check here!!
+                        _consumer.SetReadData(_unitParams); // send all of the required parameters of the MTU
                         _currentCommand = commandType.NONE;
                         _msgArr = null;
                         break;
@@ -1878,7 +1873,7 @@ public class MeganetEngine extends BTengine {
                                     ReadArr[5 + promptNameArr.length] = convertToByte(Integer.parseInt(hexAddress.substring(2, 4), 16));
                                 }
 
-                                ReadArr[6 + promptNameArr.length] = (byte) 0xe01;
+                                ReadArr[6 + promptNameArr.length] = (byte) 0xe01; // read type
 
                                 _startCollectDateTag = System.currentTimeMillis();
                                 _startCollect = true;
@@ -2050,6 +2045,7 @@ public class MeganetEngine extends BTengine {
         }
     }
 
+    // disconnect from MTU
     protected void Disconnect()
     {
         byte[] ReadArr;
@@ -2105,6 +2101,7 @@ public class MeganetEngine extends BTengine {
         }
     }
 
+    // get flow rate request
     protected void getConsumption(int input_num) {
         byte[] ReadArr;
         if (_allowReceiveFlg) {
@@ -2149,6 +2146,7 @@ public class MeganetEngine extends BTengine {
 
     }
 
+    // send time request in order to get the time was pass after the last read
     protected void TimeRequest() {
         byte[] ReadArr;
         if (_allowReceiveFlg) {
@@ -2258,7 +2256,7 @@ public class MeganetEngine extends BTengine {
         }
     }
 
-
+    // send history log requests
     protected void GetLog(int input_num, int start, int len, boolean request)
     {
         byte[] ReadArr;
@@ -2338,6 +2336,7 @@ public class MeganetEngine extends BTengine {
         }
     }
 
+    // send pairing message to RSINT
     protected void PairingDevice(boolean yesno_prm, boolean rdm_prm)
     {
         byte[] ReadArr;
@@ -2365,7 +2364,7 @@ public class MeganetEngine extends BTengine {
                 }
 
                 String hexAddress;
-                if(_is_extended)
+                if(_is_extended) // 10 DIGITS
                 {
                     hexAddress = Integer.toHexString(Integer.parseInt(_unitAddress));
                     hexAddress = Utilities.StringCompleter(hexAddress, 6, "0", true);
@@ -2378,7 +2377,7 @@ public class MeganetEngine extends BTengine {
 
                     ReadArr[5 + promptNameArr.length] = convertToByte(Integer.parseInt(hexAddress.substring(0, 2), 16));
                 }
-                else
+                else // 8 DIGITS
                 {
                     hexAddress = Integer.toHexString(Integer.parseInt(_unitAddress));
                     hexAddress = Utilities.StringCompleter(hexAddress, 4, "0", true);
@@ -2393,10 +2392,10 @@ public class MeganetEngine extends BTengine {
                 }
 
                 android.os.SystemClock.sleep(500);
-                if(rdm_prm) {
+                if(rdm_prm) { // RDM request
                     ReadArr[6 + promptNameArr.length] = (byte) 0xe30; // VHF RX mode
                 }
-                else
+                else // read request
                     ReadArr[6 + promptNameArr.length] = (byte) 0xe01; // Read command
 
 
@@ -2413,13 +2412,12 @@ public class MeganetEngine extends BTengine {
             }
         }
     }
+    // In order to stop toast messages after finish activity
+    public void resetCurrentCommand() { _currentCommand = commandType.NONE; }
 
-    public void resetCurrentCommand() { _currentCommand = commandType.NONE; } // In order to stop toast messages after finish activity
 
-    public void SetLastLatitude(String lat_prm)
-    {
-        last_latitude = lat_prm;
-    }
+    // getters and setters
+    public void SetLastLatitude(String lat_prm) { last_latitude = lat_prm; }
     public String GetLastLatitude()
     {
         return last_latitude;
@@ -2467,6 +2465,7 @@ public class MeganetEngine extends BTengine {
     public String GetNdevice() { return _ndevice;}
 
 
+    // send pulse read or RDM request
     protected void NewPulsePairingDevice(boolean yesno_prm, boolean rdm_prm)///////////////////////////////////////////////////////////////////////////////////////////
     {
         byte[] ReadArr;
@@ -2557,7 +2556,7 @@ public class MeganetEngine extends BTengine {
 
     }
 
-    public static boolean isNumeric(String str)
+    public static boolean isNumeric(String str) // check if str is number
     {
         try
         {
@@ -2573,6 +2572,6 @@ public class MeganetEngine extends BTengine {
     public byte convertToByte(Integer x)
     {
         return (byte)(x & 0xFF);
-    }
+    } // convert number to byte
 
 }

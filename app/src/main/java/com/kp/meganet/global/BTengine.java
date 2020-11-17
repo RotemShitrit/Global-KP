@@ -51,6 +51,7 @@ public abstract class BTengine {
         _errorNotify = false;
     }
 
+    // get status of bluetooth
     public btMode GetStatus() {
         if (_btAdapter.isEnabled())	{
             return btMode.ON;
@@ -59,6 +60,8 @@ public abstract class BTengine {
             return btMode.OFF;
         }
     }
+
+    // set bluetooth on
     public boolean On()	{
         try	{
             if (!_btAdapter.isEnabled()) {
@@ -72,6 +75,7 @@ public abstract class BTengine {
 
     }
 
+    // set bluetooth off
     public boolean Off() {
         if (_btAdapter.isEnabled()) {
             _btAdapter.disable();
@@ -79,6 +83,7 @@ public abstract class BTengine {
         return true;
     }
 
+    // get a list of devices identified by Bluetooth
     public Map<String, String> GetDeviceList() {
         if (_btAdapter.isDiscovering()) {
             _btAdapter.cancelDiscovery();
@@ -97,6 +102,7 @@ public abstract class BTengine {
         return devMap;
     }
 
+    // this function connect to selected device by bluetooth
     public boolean ConnectTo(String pairName_prm) {
         boolean connectStat = true;
         _connectedAddress = pairName_prm;
@@ -140,6 +146,7 @@ public abstract class BTengine {
         return connectStat;
     }
 
+    // this function send data to the connected bluetooth device
     protected void sendDataToPairedDevice(byte[] dataArr_prm) {
         try {
             Thread.sleep(100);
@@ -155,6 +162,7 @@ public abstract class BTengine {
         }
     }
 
+    // this function listen to incoming data from the connected bluetooth device
     protected void beginListenForData()	{
         final Handler handler = new Handler();
         _packetStart = 2; //This is the ASCII code for a start collect data
@@ -178,6 +186,8 @@ public abstract class BTengine {
                                 _errorNotify = true;
                             }
                         }
+
+                        // if the command type is GETLOG we will wait to receive a large amount of messages
                         if (MeganetInstances.getInstance().GetMeganetEngine().getCurrentCommand()== MeganetEngine.commandType.GET_LOG) {
                             MeganetInstances.getInstance().GetMeganetEngine().increase_timerCount();
                             try {

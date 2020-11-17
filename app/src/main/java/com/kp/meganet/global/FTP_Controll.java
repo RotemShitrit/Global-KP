@@ -43,6 +43,7 @@ public class FTP_Controll extends AppCompatActivity {
         ftpPass.setText(sp.getString("password", "password"));
         ftpPort.setText(String.valueOf(sp.getInt("port", (int) 2l)));
 
+        // save on shared preferences the parameters of FTP
         ftpSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

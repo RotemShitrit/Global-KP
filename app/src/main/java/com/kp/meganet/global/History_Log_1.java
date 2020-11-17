@@ -50,6 +50,7 @@ public class History_Log_1 extends AppCompatActivity {
         uploadFiles = (Button) findViewById(R.id.uploadBtn);
         back_btn = (Button) findViewById(R.id.backBtn);
         get_history = (Button) findViewById(R.id.getHistoryBtn);
+
         get_history.setOnClickListener(new View.OnClickListener() {
             // Click on get history button open the option to choose the device and insert unitID manually or scan QR code
             @Override
@@ -77,6 +78,7 @@ public class History_Log_1 extends AppCompatActivity {
             }
         });
 
+        // upload files to ftp
         uploadFiles.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -206,6 +208,8 @@ public class History_Log_1 extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // this class allow to upload file to ftp.
+    // it get ftp parameters from shared preferences and create ftp client that connect to ftp.
 
     public class uploadFile extends AsyncTask<Void, Void, Void> {
         Boolean connect = true;
@@ -250,8 +254,7 @@ public class History_Log_1 extends AppCompatActivity {
                         BufferedInputStream bis = null;
                         BufferedOutputStream bos = null;
 
-                        try
-                        {
+                        try {
                             URL url = new URL( sb.toString() );
                             URLConnection urlc = url.openConnection();
                             urlc.setDoOutput(true);

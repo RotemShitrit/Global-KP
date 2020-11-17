@@ -91,6 +91,8 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         //_lastPromptType = MeganetInstances.getInstance().GetMeganetDb().getSetting(6).GetKeyValue();
         //if(_lastPromptType.length() > 0)
         //    promptTypeSpin.setSelection(((ArrayAdapter<String>) promptTypeSpin.getAdapter()).getPosition(PromptConvert(_lastPromptType)));
+
+        //Select the relevant program type
         String dev_name_txt = "";
         if (MeganetInstances.getInstance().GetMeganetEngine().GetCurrentProgrammType() == 1)
         {
@@ -158,10 +160,6 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         }
 
 
-
-            // Replace "Please magnet swipe node"
-        // to "Please Click on READ button and Swipe a magnet on the Node"
-        // on 21.11.2019.
         dev_name_txt += "\n\nPlease Click on READ button \nand Swipe a magnet on the MTU";
         txtView.setText(dev_name_txt);
         promptButton.setOnClickListener(new View.OnClickListener() {
@@ -187,9 +185,10 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
                 //If pulses then Prompt REGULAR
                 if((promptTypeSpin.getSelectedItem().toString().equals("MTWE")) || (promptTypeSpin.getSelectedItem().toString().equals("MTWP")))
                     MeganetInstances.getInstance().GetMeganetEngine().Prompt(MeganetEngine.ePromptType.REGULAR, PromptConvert(promptTypeSpin.getSelectedItem().toString()));
+                //If 10 digits
                 else if (promptTypeSpin.getSelectedItem().toString().equals("E"))
                     MeganetInstances.getInstance().GetMeganetEngine().Prompt(MeganetEngine.ePromptType.TEN_CHR_PAIRING, PromptConvert(promptTypeSpin.getSelectedItem().toString()));
-                else
+                else // 8 digits
                     MeganetInstances.getInstance().GetMeganetEngine().Prompt(MeganetEngine.ePromptType.PAIRING, PromptConvert(promptTypeSpin.getSelectedItem().toString()));
 
                 programmButton.setEnabled(false);
@@ -220,6 +219,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
                 unlockCheckBox.setVisibility(View.INVISIBLE);
 
 
+                // prompt to the relevant program type
                 if (MeganetInstances.getInstance().GetMeganetEngine().GetCurrentProgrammType() == 1)
                 {
                     MeganetInstances.getInstance().GetMeganetEngine().Prompt(MeganetEngine.ePromptType.PAIRING, PromptConvert("MTPIT"));
@@ -266,6 +266,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
             }
         });
 
+        // input button for port pulses
         inputBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -274,6 +275,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
             }
         });
 
+        // disconnect button
         powerOffButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -344,6 +346,9 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         });
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+        // When the user select a parameter from the list,
+        // this method read this parameter type and present the relevant views on the screen.
         paramsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -399,6 +404,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
                     //MeterProtocolConverter
                     if(p.ParameterName.equals("Meter Protocol"))
                         InitSpinnParam(p.MinValue, p.MaxValue, MeterProtocolConverter(p.TabName));
+                    //PowerConverter
                     else if(p.ParameterName.equals("Power") && p.NDevice == 249)
                         InitSpinnParam(p.MinValue ,p.MaxValue,PowerConvert(Double.valueOf(p.TabName)));
                     else
@@ -446,7 +452,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
 
 
 
-    private void UpdateParamValue()
+    private void UpdateParamValue() // This function update the parameters on the sql object
     {
         if(_selectedItem.length() > 0)
         {
@@ -535,6 +541,8 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         return false;
     }
 
+    // This function set adapter to the parameters list
+    // and initialize it in the way they will be displayed to the user
     private void InitSpinnParam(Double minValue, Double maxValue, String value)
     {
         Integer range = maxValue.intValue() - minValue.intValue();
@@ -581,9 +589,11 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         paramSpiner.setSelection(((ArrayAdapter<String>) paramSpiner.getAdapter()).getPosition(value));
     }
 
+    // This function take the analyze data and the relevant parameters that it get
+    // and insert them to the parameters list
     public void SetReadData(Map<String, QryParams> data_prm)
     {
-        _currentReadData = data_prm; // check here!!
+        _currentReadData = data_prm; // get data parameters
 
         // Initializing a new String Array
         int i = 0;
@@ -662,6 +672,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
 
     }
 
+    // on disconnect
     public void OnPowerOff (boolean result_prm, String err_prm)
     {
         if(result_prm)
@@ -816,6 +827,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         //bq.setBackgroundColor(Color.BLUE);
     }
 
+    // converter of frequency parameter
     private String FrequencyFormat(String freq_prm, boolean fromDouble)
     {
         String val;
@@ -839,6 +851,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         return val;
     }
 
+    // this function convert power parameter
     private String PowerConvert(Double power)
     {
         String ret = "";
@@ -945,6 +958,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
     }
 
 
+    // converter of meter protocol parameter
     private String MeterProtocolConverter(String type_prm)
     {
         if(type_prm.equals("1"))
@@ -977,6 +991,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         return type_prm;
     }
 
+    // this function called when this activity done, in order to cancel the toast messages
     @Override
     protected void onStop() {
         super.onStop();
@@ -1167,6 +1182,7 @@ public class ProgrammActivity extends AppCompatActivity implements iCallback{
         return convertedPrompt;
     }
 
+    //If unlock checkbox is checked - this function ask for a password to change a "read only" parameter
     private void InputUnlockPasswordDialog()
     {
         // Set an EditText view to get user input

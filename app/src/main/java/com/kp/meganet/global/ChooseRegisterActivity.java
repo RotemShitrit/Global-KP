@@ -18,6 +18,7 @@ public class ChooseRegisterActivity extends AppCompatActivity {
         wer = (Button) findViewById(R.id.button_werUz1);
         ber1 = (Button) findViewById(R.id.button_ber1);
 
+        // choose ber1 device
         ber1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -29,6 +30,7 @@ public class ChooseRegisterActivity extends AppCompatActivity {
             }
         });
 
+        // choose wer/uz1 device
         wer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

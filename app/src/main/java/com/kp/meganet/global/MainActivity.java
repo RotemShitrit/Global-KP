@@ -75,26 +75,23 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        //ADD DISABLE TO ITEM WORK ORDER
 
+        // request for storage permission on msgbox
         if ((ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, READ_WRITE_PERMISSION);
-            //toast.makeText(getApplicationContext(), "לא ניתן להמשיך בפעולה! \n יש להכנס להגדרות האפליקציה ולאפשר גישה לקבצים.", Toast.LENGTH_SHORT).show();
         }
 
         exitButton = (Button) findViewById(R.id.buttonCloseApp);
         pairButtorn = (Button) findViewById(R.id.buttonPair);
-
         statusTextView = (TextView) findViewById(R.id.textViewStatus);
         bluetoothSwitch = (Switch) findViewById(R.id.switch1);
 
         myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
         myBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        if(myBluetoothAdapter == null)
+        if(myBluetoothAdapter == null) // if the phone not support bluetooth cannot continue
         {
             statusTextView.setText("Status: Bluetooth is not supported");
 
@@ -108,10 +105,7 @@ public class MainActivity extends AppCompatActivity
         {
             btSupport = true;
             MeganetInstances.getInstance().SetMeganetDb(new MeganetDB(this));
-
             MeganetInstances.getInstance().SetMeganetEngine(new MeganetEngine(myBluetoothAdapter,getApplicationContext()));
-
-
 
             InitStartApp();
 
@@ -135,7 +129,6 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onClick(View v) {
                     ExitApplication();
-
                 }
             });
 
@@ -146,10 +139,9 @@ public class MainActivity extends AppCompatActivity
 
                     String macAddr;
 
-                    if (MeganetInstances.getInstance().GetMeganetEngine().GetStatus() == BTengine.btMode.ON) {
+                    if (MeganetInstances.getInstance().GetMeganetEngine().GetStatus() == BTengine.btMode.ON) { // if bluetooth on
                         macAddr = pairsList.get(pairsSpinner.getSelectedItem().toString());
-                        if (Connect(v, macAddr)) {
-
+                        if (Connect(v, macAddr)) { // if pairing with selected item from pairs list was succeed
                             Toast.makeText(getApplicationContext(), "Paired with: " + pairsSpinner.getSelectedItem().toString(),
                                     Toast.LENGTH_SHORT).show();
                             statusTextView.setText("Paired with: " + pairsSpinner.getSelectedItem().toString());
@@ -159,15 +151,14 @@ public class MainActivity extends AppCompatActivity
                             MeganetInstances.getInstance().GetMeganetDb().updateProperty(data);
                             isPaired = true;
                             pairButtorn.setEnabled(false);
-                        } else {
-
+                        } else { // pairing not succeed
                             Toast.makeText(getApplicationContext(), "Can't pair with: " + pairsSpinner.getSelectedItem().toString(),
                                     Toast.LENGTH_SHORT).show();
                             statusTextView.setText("Can't pair with: " + pairsSpinner.getSelectedItem().toString());
                             isPaired = false;
 
                         }
-                    } else {
+                    } else { // if bluetooth off
                         Toast.makeText(getApplicationContext(), "Bluetooth not enabled",
                                 Toast.LENGTH_SHORT).show();
                         statusTextView.setText("Bluetooth is OFF");
@@ -179,7 +170,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
+    // This function for getting to storage permission.
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
@@ -196,8 +187,8 @@ public class MainActivity extends AppCompatActivity
                     // system settings in an effort to convince the user to change
                     // their decision.
                     AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
-                    dlgAlert.setMessage("לא ניתן להמשיך בפעולה ללא גישה לאחסון המכשיר!");
-                    dlgAlert.setTitle("שגיאה!");
+                    dlgAlert.setMessage("Cannot continue without storage permission!");
+                    dlgAlert.setTitle("Error!");
                     dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
                             finish();
@@ -212,6 +203,7 @@ public class MainActivity extends AppCompatActivity
         // permissions this app might request.
     }
 
+    // when the phone user click on back button
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -231,6 +223,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    // create menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -239,6 +232,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    // item of secondary menu was selected
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -256,6 +250,7 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    // when item from the main menu selected this function called
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -272,7 +267,7 @@ public class MainActivity extends AppCompatActivity
         }
         else
         {
-            if(!btSupport)
+            if(!btSupport) // check if the phone support bluetooth
             {
                 Toast.makeText(getApplicationContext(), "Your device does not support Bluetooth",
                         Toast.LENGTH_LONG).show();
@@ -282,7 +277,7 @@ public class MainActivity extends AppCompatActivity
 
                 return false;
             }
-            if (!isPaired)
+            if (!isPaired) // check if phone not connected to Rsint
             {
                 Toast.makeText(getApplicationContext(), "Please pair RSINT unit before proceeding",
                         Toast.LENGTH_LONG).show();
@@ -361,6 +356,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    // connecting to Rsint by bluetooth
     public boolean Connect(View v, String address_prm) {
         Toast.makeText(getApplicationContext(), "Connecting",
                 Toast.LENGTH_SHORT).show();
@@ -373,6 +369,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    // open activities by main menu selection
     public void OpenNewActivity(int activityID_prm)
     {
         Intent intent;
@@ -480,6 +477,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    // exit application alert dialog
     private void ExitApplication()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

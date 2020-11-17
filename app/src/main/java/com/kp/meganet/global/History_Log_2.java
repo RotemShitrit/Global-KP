@@ -86,7 +86,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
         }
     };
 
-
+    // Runnable for send messages requests until we get all of the messages
     Runnable getLogRunnable = new Runnable() {
         @Override
         public void run() {
@@ -134,7 +134,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
         //input.setVisibility(View.INVISIBLE);
         inputSpinner.setVisibility(View.INVISIBLE);
 
-        // Initializing an ArrayAdapter
+        // Initializing an ArrayAdapter for input spinner
         ArrayAdapter<String> inputsSpinnerArrayAdapter = new ArrayAdapter<String>(
                 this, R.layout.checked, inputs
         );
@@ -203,6 +203,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
         MeganetInstances.getInstance().GetMeganetEngine().InitReadMeter(this);
         MeganetInstances.getInstance().GetMeganetEngine().InitProgramming(this, MeganetInstances.getInstance().GetMeganetDb().getSetting(1).GetKeyValue());
 
+        // click on connect button send pairing request
         promptBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -267,6 +268,8 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
                         promptBtn.setVisibility(View.INVISIBLE);
                         tv1.setText("Connected to MTU: " + MeganetInstances.getInstance().GetMeganetEngine().GetUnitAddress());
                         int ndevice = Integer.decode("0x" +  MeganetInstances.getInstance().GetMeganetEngine().GetNdevice())-1;
+
+                        // if ndevice is 45 then size of massage is 4 bytes and we have to select input number
                         if(ndevice == 45) {
                             getLogBtn.setVisibility(View.VISIBLE);
                             tv16.setVisibility(View.VISIBLE);
@@ -285,6 +288,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
                             MeganetInstances.getInstance().GetMeganetEngine().TimeRequest(); // send time request
                         }
 
+                        // this button is only for ndevice 45 that have to choose input number
                         getLogBtn.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -336,6 +340,8 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
     public void SetReadData(Map<String, QryParams> data_prm) {
     }
 
+
+    // when we get data reads from Rsint then we need to save them and to decoded them from the message
     @Override
     public void ReadData(byte[] dataArr_prm) { //
         int len, num_of_msgs;
@@ -360,7 +366,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
                 msg = Arrays.copyOfRange(dataArr_prm, 0, len + 2);
                 dataArr_prm = Arrays.copyOfRange(dataArr_prm, len + 2, dataArr_prm.length);
 
-                if(len == 6)
+                if(len == 6) // Ack message means that the MTU done to send all of his reads
                 {
                     if(msg[7] == 9) {
                         total = (int) curr_index;
@@ -371,7 +377,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
                     first_index = ConvertByteToNumber(Arrays.copyOfRange(msg, 7, 9)); // first index indicate the number of the first read in a message
                     curr_index = first_index-1;
 
-                    num_of_msgs = (len - 7) / msgSize;
+                    num_of_msgs = (len - 7) / msgSize; // number of reads in a message
 
                     for (int i = 0; i < num_of_msgs; i++) {
                         read = ConvertByteToNumber(Arrays.copyOfRange(msg, 9 + msgSize * i, 9 + msgSize * (i+1)));
@@ -385,7 +391,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
             System.out.println("Current length is: " + current_length);
             MeganetInstances.getInstance().GetMeganetEngine().reset_timerCount();
 
-            if (current_length == total) { // If we received all reads we need to upload the history log to FTP
+            if (current_length == total) { // If we received all reads, we insert all into csv file and save in storage
                 byte[] tamper_msg = {-1, -1, -1, -1, -1};
                 double tamper = ConvertByteToNumber(tamper_msg);
                 double id, message_prm;
@@ -471,6 +477,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
         }
     }
 
+    // check if storage permission granted
     public boolean checkPermission(String permmission){
         //return(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED);
         if ((ContextCompat.checkSelfPermission(this,
@@ -483,6 +490,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
         }
     }
 
+    // check if we can write in the storage
     private boolean isExternalStorageWritable(){
         if(Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())){
             Log.i("State", "Yes, it is writable!");
@@ -493,6 +501,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
     }
 
 
+    // this function is for missing reads. we send request to get them again
     public void send_requests() {
         int len;
         List<Double> messagesByKey = new ArrayList<Double>(messages.keySet());
@@ -517,10 +526,11 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
         }
     }
 
+    // Function that update the time of the last read that received and then send log request
     @Override
-    public void GetTime(byte[] dataArr_prm) { // Function that update the time of the last read that received and then send log request
-
-        if( MeganetInstances.getInstance().GetMeganetEngine().get_timerCount() >= 5)// If we didn't success to receive the last read after 5 attempts, we disconnect.
+    public void GetTime(byte[] dataArr_prm) {
+        // If we didn't success to receive the last read after 5 attempts, we disconnect.
+        if( MeganetInstances.getInstance().GetMeganetEngine().get_timerCount() >= 5)
         {
             MeganetInstances.getInstance().GetMeganetEngine().reset_timerCount();
             toast.makeText(getApplicationContext(), "Lost Connection!", Toast.LENGTH_SHORT).show();
@@ -536,6 +546,7 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
         }
     }
 
+    // decoded a read to number
     public double ConvertByteToNumber(byte[] bytes)
     {
         double number = 0;
@@ -568,10 +579,12 @@ public class History_Log_2 extends AppCompatActivity implements iReadMeterCallBa
 
     }
 
-    @Override
-    public void OnRead(String serial_num, String reading) { // Function that update the MeterSN and send time request
 
-        if( MeganetInstances.getInstance().GetMeganetEngine().get_timerCount() >= 5) // If we didn't success to update the MeterSN after 5 attempts, we disconnect.
+    // Function that update the MeterSN and send time request
+    @Override
+    public void OnRead(String serial_num, String reading) {
+        // If we didn't success to update the MeterSN after 5 attempts, we disconnect.
+        if( MeganetInstances.getInstance().GetMeganetEngine().get_timerCount() >= 5)
         {
             MeganetInstances.getInstance().GetMeganetEngine().reset_timerCount();
             MeganetInstances.getInstance().GetMeganetEngine().Disconnect();

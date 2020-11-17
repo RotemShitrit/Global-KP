@@ -23,6 +23,7 @@ public class ChooseDeviceActivity extends AppCompatActivity {
         wallBtn = (Button) findViewById(R.id.wall_device);
         werBtn = (Button) findViewById(R.id.registers);
 
+        //  choose pit device
         pitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -33,6 +34,7 @@ public class ChooseDeviceActivity extends AppCompatActivity {
             }
         });
 
+        //  choose wall mount device
         wallBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -43,6 +45,7 @@ public class ChooseDeviceActivity extends AppCompatActivity {
             }
         });
 
+        //  choose register device
         werBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

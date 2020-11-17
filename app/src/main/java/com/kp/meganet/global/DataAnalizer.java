@@ -74,12 +74,14 @@ public class DataAnalizer {
     private int _promptNameLen;
     Context context;
 
-    public DataAnalizer(Context con) {
+    public DataAnalizer(Context con) { // constructor
         context = con;
         _unitData = new HashMap<String, String>();
         InitNDevices("");
     }
 
+
+    // this function take data xml file and save it on DevDB object
     public boolean InitNDevices(String xmlLocation_prm)
     {
         /*
@@ -195,6 +197,7 @@ public class DataAnalizer {
         return value;
     }
 
+    // this function update data in MTU when programming the MTU
     public byte[] ApplyData(byte[] userDataParamArr, Map<String, QryParams> dataParams_prm, int promptNameLen_prm, boolean isPair_prm) {
         byte[] rawDataArr = userDataParamArr;
 
@@ -375,6 +378,7 @@ public class DataAnalizer {
         return Long.toString(bs.toLongArray()[0], 2);
     }
 
+    // this function decode data follow the requirements of data types
     private QryParams DecodeDataArr(byte[] data_prm, QryParams param)// , int lenght_prm, String paramName_prm, String paramType_prm, String stringType_prm)
     {
         //String strRet = "";
@@ -522,6 +526,7 @@ public class DataAnalizer {
         return param;
     }
 
+    // this function analyze the data of MTU follow requirements of data types, and return the analyzed data.
     public Map<String, QryParams> AnalizeData(byte[] data_prm, String ndevice_prm, int promptNameLen_prm, boolean isPair_prm) {
         // type 0 - LARS, 1 = LARS1, 4 = LARS2
 
@@ -537,19 +542,19 @@ public class DataAnalizer {
         List<QryParams> parametersArr = new ArrayList<QryParams>();
         int ndeviceTmp = Integer.decode("0x" + ndevice_prm)-1;
         boolean simpleFlg = false;
-        for(QryParams param : _devObject.parameters)
+        for(QryParams param : _devObject.parameters) // take the parameters of the required MTU
         {
             if(param.NDevice == ndeviceTmp)// && param.ParameterName.equals("Parameters"))
             {
                 param.TabName = "";
-                parametersArr.add(param);// check here!!
+                parametersArr.add(param);
             }
         }
         // Parameter array
         byte[] paramArr = new byte[256];
         String strTmp;
         // Обработка данных
-        for(QryParams param : parametersArr)
+        for(QryParams param : parametersArr) // for each parameter, analyze follow the requirements of data type
         {
             // 1. Взять массив с позиции
             for(int i = 0; i < param.StringLength; i++)
@@ -558,7 +563,7 @@ public class DataAnalizer {
             }
             tmpParam = DecodeDataArr(paramArr, param);
             if(tmpParam != null)
-                paramsMap.put(tmpParam.ParameterName, tmpParam); // check here!!
+                paramsMap.put(tmpParam.ParameterName, tmpParam);
         }
 
         for(Map.Entry<String, QryParams> itemFreq : paramsMap.entrySet())
